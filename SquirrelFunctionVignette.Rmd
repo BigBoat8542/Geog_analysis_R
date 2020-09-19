@@ -1,0 +1,57 @@
+```{r}
+title: SquirrelFunction
+  author: Luke WS
+  date: 09/04/2020
+  output: html 
+#creating vignette
+  vignette: 
+  %\VignetteIndexEntry{SquirrelFunction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+```
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+  # change set values and collapses to length of 1 vector
+)
+```
+
+```{r setup, echo=FALSE}
+library(lws246)
+```
+
+```{r setup, echo=FALSE}
+library(geospaar)
+```
+
+```{r}
+#' A Squirrel Function Luke Watson-Sharer copy from r script
+#' @descriptionfuntion we will adapt
+#' @description This function allows you to express your admiration of Squirrels.
+#' @param admire Do you admire Squirrels? Defaults to TRUE.
+#' @export
+#' @examples
+#' Squirrel_function()
+squirrel_function <- function(admire = TRUE) {
+  if(admire == TRUE){
+    print("I strongly admire squirrels!")
+  } else {
+    print("I do not belong to the squirrel fan club.")
+  }
+}
+# this is copied from the r script and says that anytime admire is = true then print the first statement if false print the other
+```
+
+```{r}
+squirrel_function(admire=TRUE)
+#prints when you do admire squirrels so true
+```
+
+```{r}
+squirrel_function(admire=FALSE)
+#prints when you do not admire squirrels so false
+```
+End of Vignette and Assignment 1
+
