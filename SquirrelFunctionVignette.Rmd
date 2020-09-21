@@ -3,7 +3,7 @@ title: SquirrelFunction
   author: Luke WS
   date: 09/04/2020
   output: html 
-#creating vignette
+#creating vignette 
   vignette: 
   %\VignetteIndexEntry{SquirrelFunction}
   %\VignetteEngine{knitr::rmarkdown}
