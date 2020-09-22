@@ -15,5 +15,3 @@ This function allows you to express your admiration of Squirrels.
 \examples{
 Squirrel_function()
 }
-
-The squirrel function was made to show how to make an executable statement and task. The if else print statements, differentiating squirrel and nonsquirrel admirers helps us understand how a code can go through a basic recursive call. When you don't strongly admite squirrels you're bound to no belong to the squirrel fan club in this case. This logic will be useful in reapplying, to different scenarios such as nearest neighbor vignette functions and many more
