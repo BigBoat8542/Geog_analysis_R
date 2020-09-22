@@ -1,15 +1,11 @@
-```{r}
-#Author: Luke Watson-Sharer
-#  Title: Module 3 Assignment 2
-#  Date: 09/18/2020
-#  Course: Geog 246
-  
-  
-  vignette: 
+---
+title: "5.3"
+output: rmarkdown::html_vignette
+vignette: >
   %\VignetteIndexEntry{5.3}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-```
+---
 
 
 ```{r, error = TRUE}
@@ -70,7 +66,7 @@ print(d) # Test and print matrices and data frame
 print(m1)
 print(m2)
 print(m3)
-#Changing factor to character 1. as.character() function and 2. Convert a list to characters
+#Changing factor to character 1. as.character() function and 2. stringsAsFactors = FALSE
 ```
 
 ```{r}
@@ -122,7 +118,12 @@ d3
 t <- list(v1, m1, m2)
 t1 <- lapply(1:length(t), function(x) mycalc(t[[x]], v2, "multiply"))
 t2 <- sapply(1:length(t), function(x) mycalc(t[[x]], v2, "multiply"))
+
+print (t2)
+print(t3)
 # making all of the functions/the list and running sapply and lapply functions to for mycalc.
+
+# this function builds a calculator that adds, divides, subtracts, and multiplies operations of x and y. we take that from the R script and use it in the vignette to develop functions using the calculator. Mycalc uses x and y but we develop variables v1-4 as random variables, of integers, values 0 through 1 and characters. Then after building the matrices and the data frame I test each of the function, noticing an intentional error on s6 and d6. I then make my functions dividing and multiplying columns and rows, followed up by a list creation and using the new functions we learned in module 3.
 ```
 
 
