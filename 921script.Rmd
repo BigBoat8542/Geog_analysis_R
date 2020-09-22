@@ -1,0 +1,71 @@
+```{r}
+set.seed(1)
+b <- 1:sample(1:10000, 1)
+b[length(b)]
+```
+
+```{r}
+set.seed(10)
+a <- sample(1:20, 10, replace = TRUE)
+names(a) <- paste0("V", 1:10)
+#names(a) <- paste("V1", 1:10, sep = "")
+b <- letters[a]
+d <- rnorm(n = 10, mean = 100, sd = 20)
+l <- list("a" = a, "b" = b, "d" = d)
+l
+```
+
+```{r}
+set.seed(10)
+m <- cbind(V1 = 1:10, 
+           V2 = sample(1:100, size = 10, replace = TRUE), 
+           V3 = runif(n = 10, min = 0, max = 50))
+str(m)
+dat <- data.frame(m, V4 = sample(letters[1:5], size = 10, replace = TRUE))
+dat
+```
+# select 1st 2nd and 10th elements from a
+```{r}
+a[c(1, 2, 10)]
+
+```
+# select elements of a named v1, v2, v3
+
+```{r}
+a[c("V1", "v2", "v3")]
+```
+# replace second to last value with "sasquatch"
+```{r}
+a[length(a)-1] <- "sasquatch"
+```
+# select from b, values k n and e
+```{r}
+b %in% c("k", "n", "e")
+b[b%in% c("k", "h", "g")]
+```
+# index positions of values in b
+```{r}
+which(b %in% c("k", "h", "g"))
+```
+# first and last five objects
+```{r}
+d[1:5]*d[(length(d)-4):length(d)]
+```
+# selec all values > 100
+```{r}
+d[d>100]
+length(d[d>100])
+which(d>100)
+```
+# all values btwn 90 and 110 replace with 100
+```{r}
+d[d > 90 | d <110] <- 100
+# repeat 1,3,48 as steps, access a, b, d from l
+```
+
+```{r}
+
+```
+
+
+
