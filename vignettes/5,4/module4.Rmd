@@ -1,0 +1,118 @@
+---
+title: "assignment3"
+author: Luke W-S
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{module4}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, warning = FALSE, message = FALSE} 
+#adding libraries
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+```{r, warning = FALSE, message = FALSE}
+#1 making tibbles
+t1 <- tibble(V1 = paste0("G", 1:10), V2 = runif(10, min = 75, max = 125))
+t1
+t2 <- tibble(v1 = paste0("G", 1:15), V3 = LETTERS[sample(1:6, 15, replace = TRUE)])
+t2
+set.seed(1)
+t3 <- tibble(v1 = paste0("G", 1:20), v4 = rnorm(20, mean = 100, sd = 20))
+t3
+```
+
+```{r, warning = FALSE, message = FALSE}
+#join for 1
+j1 <- inner_join(x = t1, y = t2, by = c("V1" = "v1")) %>% inner_join(., t3, by = c("V1" = "v1"))
+j2 <- full_join(x = t1, y = t2, by = c("V1" = "v1")) %>% full_join(., t3, by = c("V1" = "v1"))
+j3 <- left_join(x = t1, y = t2, by = c("V1" = "v1")) %>% left_join(., t3, by = c("V1" = "v1"))
+j4 <- right_join(x = t1, y = t2, by = c("V1" = "v1")) %>% right_join(., t3, by = c("V1" = "v1"))
+```
+
+```{r, warning = FALSE, message = FALSE}
+#2 reading in the data
+library(readr)
+fs <- dir(system.file("extdata/", package = "geospaar"), pattern = "FAOSTAT", full.names = TRUE)
+fs
+crops <- lapply(fs, read.csv)
+
+crops_df <- do.call(rbind, lapply(crops, function(x) {
+  x %>% dplyr::select(Item, Area, Element, Year, Value) %>% 
+    pivot_wider(names_from = Element, values_from = Value) %>% 
+    rename(crop = Item, country = Area, year = Year, 
+           harv_area = `Area harvested`, prod = Production)
+}))
+crop_ylds <- crops_df %>% mutate(yield = prod / harv_area)
+crop_ylds
+
+crop_ylds <- crop_ylds %>% 
+  mutate(country = ifelse(country == "South Africa", "ZAF", country)) %>%  
+  mutate(country = ifelse(country == "Zambia", "ZMB", country)) %>% 
+  mutate(crop = tolower(crop))
+set.seed(1)
+crop_ylds %>% sample_n(5)
+
+```
+
+```{r, warning = FALSE, message = FALSE}
+#3, filter, arrange, and slice and add test code
+FAS_1 <- crop_ylds %>% arrange(desc(harv_area)) %>% filter(country == "ZAF", crop == "maize") %>% slice(1:5)
+FAS_2 <- crop_ylds %>% arrange(desc(yield)) %>%  filter(country == "ZAF", crop == "maize") %>% slice(1:5)
+FAS_1
+FAS_2
+#crops_df %>% filter(crop =="Maize" & country == "South Africa") %>% arrange(harv_area) %>% slice(50:54, .preserve = FALSE)
+
+#crops_df %>% filter(crop =="Maize" & country == "South Africa") %>% arrange(yield) %>% slice(50:54, .preserve = FALSE)
+```
+
+```{r, warning = FALSE, message = FALSE}
+#4 mean of each crop yield
+t <- crop_ylds %>% group_by(crop, country) %>% summarize(mean_yield = mean(yield))
+t
+p <- sapply((crop_ylds$crop), function(x) {mean(crop_ylds[crop_ylds$crop == x, ] $yield)})
+unique(p)
+```
+
+```{r, warning = FALSE, message = FALSE}
+#5  correlation matrix for SAC
+cor(crop_ylds[, c("yield", "harv_area")])
+crop_ylds %>% select(yield, harv_area) %>% cor()
+cor.test(x = crop_ylds$yield, y = crop_ylds$harv_area)
+L <- crop_ylds %>% group_by(crop, country) %>% summarise(cor = cor(yield, harv_area)) %>% arrange(cor)
+L
+```
+
+
+```{r, fig.width=4.75, fig.height=3.75, fig.align = "center"}
+#6 single scatter plot ggplot of maize
+crop_ylds %>% filter(crop == "maize") %>%
+  ggplot() + geom_point(aes(x = harv_area, y = yield, color = country)) +
+  geom_smooth(aes(x = harv_area, y = yield, color = country), method = "lm") +
+  scale_color_manual(values = c("red", "blue")) +
+  xlab("Harvested area (ha)") + ylab("Yield(t/ha)") +
+  ggtitle("Harvested area versus yield")
+```
+
+
+```{r, fig.width=4.75, fig.height=3.75, fig.align = "center"}
+#7  single scatter plot graphics plot of wheat yield in South Africa
+zaf_wheat <- crop_ylds %>% filter(crop == "wheat" & country == "ZAF")
+yl <- range(crop_ylds[crop_ylds$crop == "wheat", "yield"])
+plot(yield ~ year, data = zaf_wheat, pch = 16, col = "blue",
+     ylim = yl, main = "South Africa Wheat yield (1961-2017)", ylab=("Yield (t/ha)"), xlab = (" "))
+points(yield ~ year, data = zaf_wheat, pch = 16, col = "grey")
+abline(lm(yield ~ year, data = zaf_wheat), col = "blue")
+```
+
+
+```{r, fig.width=4.75, fig.height=3.75, fig.align = "center"}
+#8 histogram of maize yield in zambia
+crop_ylds %>% filter(crop == "maize", country == "ZMB") %>% ggplot() + geom_histogram(mapping = aes(x = yield, color = country), fill = "blue", col = "black", bins = 5) + ggtitle("Zambian Maize Yields") + xlab("Yield(t/ha)") + ylab("Production (tons)")
+```
+
+
