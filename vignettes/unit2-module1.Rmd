@@ -1,0 +1,126 @@
+---
+title: "unit2-module1"
+output: rmarkdown::html_vignette
+name: Luke Watson-Sharer
+vignette: >
+  %\VignetteIndexEntry{unit2-module1}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r}
+library(dplyr)
+library(geospaar)
+library(rgdal)
+library(sf)
+library(tidyverse)
+# reading in libraries and files
+
+farmer_spatial <- read.csv(system.file("extdata", "farmer_spatial.csv",
+                     package = "geospaar")) %>% distinct(uuid, x, y, season)
+farmers_sf <- st_as_sf(farmer_spatial, coords = c("x", "y"), crs = 4326)
+farmers_sf
+ # creating object from read in data
+roads <- read_sf(system.file( "extdata/roads.shp", package = "geospaar"))
+districts <- read_sf(system.file("extdata/districts.shp", package = "geospaar"))
+#convert to albers
+farmers_alb <- farmers_sf %>% st_transform(st_crs(roads))
+districts_alb <- districts %>% st_transform(st_crs(roads))
+st_crs(farmers_alb)
+st_crs(districts_alb)
+
+
+```
+
+```{r, fig.width=6, fig.height=5, fig.align = "center"}
+#plotting new datasets created in albers
+par(mar = c(0, 0, 0, 0))
+plot(districts_alb %>% st_geometry(), col = "grey")
+plot(roads %>% st_geometry(), col = "red", add = TRUE)
+plot(farmers_alb %>% st_geometry(), col = "blue", pch = 20, add = TRUE)
+#using ggplot to also plot all three datasets
+ggplot(districts_alb) + geom_sf(pch = "+", size = 3) +
+  geom_sf(data = roads, col = "red", fill = "grey") +
+  geom_sf(data = farmers_alb, pch = "+", size = 3, col = "blue")
+```
+
+
+```{r, fig.width=6, fig.height=4, fig.align = "center"}
+#creating objects for number 4
+par(mar = c(1, 0, 0, 0)) #making space for the title
+median_dist <- districts_alb %>% mutate(area = as.numeric(units::set_units(st_area(.), "km2"))) %>% filter(area == quantile(area, probs = 0.5, type = 1)) #creating median dist, at 50th percentile, setting the units in kilometers squared
+
+ggplot(districts_alb) + geom_sf(data = median_dist, fill = "khaki") + geom_sf(pch = "+", size = 3) +   ggtitle("The Median Area District")
+ #plotting new graph
+```
+
+
+```{r, fig.width=6, fig.height=4, fig.align = "center"}
+#creating median_distp as the value of centroid
+median_distp <- median_dist%>% st_transform(., st_crs(roads)) %>% st_centroid()
+closest_20farmers <- farmers_alb %>% filter(season == 1) %>%
+  mutate(as.numeric(st_distance(median_distp))) %>% slice(1:20)
+closest_20farmers
+```
+
+
+```{r, fig.width=6, fig.height=4, fig.align = "center"}
+my_pol <- st_as_sfc(st_bbox(c(xmin = 30, xmax = 31,ymax = -10, ymin = -11), crs = st_crs(4326))) %>% st_transform(st_crs(roads))
+my_pol #creating my polygon in albers with paramters
+
+dists_int <- districts_alb %>% slice(st_intersects(x = my_pol, y = districts_alb)[[1]])
+par(mar = rep(0, 4))
+plot(st_geometry(districts_alb), col = "grey")
+plot(st_geometry(dists_int), col = "grey40", add = TRUE)
+plot(st_geometry(my_pol), border = "yellow", add = TRUE)
+
+#calculating area
+dist_areas <- districts_alb %>% st_area()
+dist_areas
+a_ha <- dist_areas %>% units::set_units("ha")
+a_km2<-dist_areas %>% units::set_units("km^2")
+
+#converting to multipolygon
+mypol_dist_int <- st_intersection(x = districts_alb, y = my_pol) %>%
+  st_cast() %>% mutate(area = as.numeric(st_area(.)) %>% units::set_units("ha"))
+rbcols <- rainbow(n = nrow(mypol_dist_int))
+par(mar = rep(0, 4))
+plot(st_geometry(districts_alb), col = grey, add = TRUE)
+plot(st_geometry(mypol_dist_int), col = rbcols, add = TRUE)
+```
+
+```{r, fig.width=6, fig.height=4, fig.align = "center"}
+#selecting the roads based on length
+ncol(roads) #counter for columns
+nrow(roads)
+roads_extreme <- roads %>% mutate(length =as.numeric(st_length(.))) %>% arrange(length) %>% slice(1, nrow(.))
+roads_extreme
+roads_extreme_buff <- roads_extreme %>% st_buffer( . , 50000)
+roads_extreme_buff # creating the variables for the shortest/longest roads and the buffers
+par(mar = c(1, 0, 0, 0))
+plot(st_geometry(districts_alb), col = "grey")
+plot(st_geometry(roads_extreme_buff), col = "blue", add = TRUE)
+plot(st_geometry(roads_extreme), col = "red", lwd = 3, add = TRUE)
+```
+
+```{r, fig.width=6, fig.height=4, fig.align = "center"}
+set.seed(2)
+var1 <- roads_extreme_buff %>% st_sample(size = c(10, 50,  exact = TRUE)) # select 10 smallest from object then 50 largest
+plot(st_geometry(districts_alb), col = "grey")
+plot(st_geometry(roads_extreme_buff), col = "blue", add = TRUE)
+plot(st_geometry(roads_extreme), col = "red", lwd = 3, add = TRUE)
+plot(st_geometry(var1), col = "yellow", pch = 20, add = TRUE)
+```
+
+```{r, fig.width=6, fig.height=4, fig.align = "center"}
+roads_int <- st_intersection(x = roads_extreme_buff, y = roads) #get roads that intersect
+roads_int
+t <-st_length(roads_int) # convert length to object
+meters <- sum(t) #sum in meters
+km <- meters/1000 #convert to km
+
+plot(st_geometry(districts_alb), col = "grey", add = TRUE)
+plot(st_geometry(roads_extreme_buff), col = "blue", add = TRUE)
+plot(st_geometry(roads_int), col = "red", add = TRUE)
+```
+
